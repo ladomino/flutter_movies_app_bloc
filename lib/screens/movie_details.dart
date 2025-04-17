@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:movies_app_provider/models/movies_model.dart';
-import 'package:movies_app_provider/widgets/movies/favorite_btn.dart';
+import 'package:movies_app_bloc/models/movies_model.dart';
+import 'package:movies_app_bloc/widgets/movies/favorite_btn.dart';
 
 import '../widgets/cached_image.dart';
 import '../widgets/movies/genres_list_widget.dart';
@@ -13,7 +13,6 @@ class MovieDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
   
-    
     final size = MediaQuery.sizeOf(context);
 
     return Scaffold(

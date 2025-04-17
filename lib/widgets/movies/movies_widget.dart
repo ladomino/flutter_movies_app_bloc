@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 
-import 'package:movies_app_provider/constants/my_app_icons.dart';
-import 'package:movies_app_provider/models/movies_model.dart';
-import 'package:movies_app_provider/screens/movie_details.dart';
-import 'package:movies_app_provider/service/init_getit.dart';
-import 'package:movies_app_provider/service/navigation_service.dart';
-import 'package:movies_app_provider/widgets/cached_image.dart';
-import 'package:movies_app_provider/widgets/movies/favorite_btn.dart';
-import 'package:movies_app_provider/widgets/movies/genres_list_widget.dart';
-
+import 'package:movies_app_bloc/constants/my_app_icons.dart';
+import 'package:movies_app_bloc/models/movies_model.dart';
+import 'package:movies_app_bloc/screens/movie_details.dart';
+import 'package:movies_app_bloc/service/init_getit.dart';
+import 'package:movies_app_bloc/service/navigation_service.dart';
+import 'package:movies_app_bloc/widgets/cached_image.dart';
+import 'package:movies_app_bloc/widgets/movies/favorite_btn.dart';
+import 'package:movies_app_bloc/widgets/movies/genres_list_widget.dart';
 
 class MoviesWidget extends StatelessWidget {
   final MovieModel movieModel;

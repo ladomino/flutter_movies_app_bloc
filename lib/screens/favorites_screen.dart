@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:movies_app_provider/view_model/favorites_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movies_app_bloc/service/init_getit.dart';
+import 'package:movies_app_bloc/view_model/favorites/favorites_bloc.dart';
+import 'package:movies_app_bloc/widgets/my_error_widget.dart';
 
 import '../constants/my_app_icons.dart';
 import '../widgets/movies/movies_widget.dart';
@@ -10,39 +12,57 @@ class FavoritesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final favoritesProvider = Provider.of<FavoritesProvider>(context);
-    
     return Scaffold(
       appBar: AppBar(
         title: const Text("Favorite Movies"),
         actions: [
           IconButton(
             onPressed: () {
-              favoritesProvider.clearAllFavs();
+              getIt<FavoritesBloc>().add(RemoveAllFromFavorites());
             },
             icon: const Icon(MyAppIcons.delete, color: Colors.red),
           ),
         ],
       ),
-      body:
-          favoritesProvider.favoritesList.isEmpty
-              ? const Center(
-                child: Text(
-                  "No added Favs",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
-              )
-              : ListView.builder(
-                itemCount: favoritesProvider.favoritesList.length,
-                itemBuilder: (context, index) {
-                  final favMovie =
-                      favoritesProvider.favoritesList.reversed.toList()[index];
+      body: BlocBuilder<FavoritesBloc, FavoritesState>(
+        builder: (context, state) {
 
-                  return (MoviesWidget(
-                    movieModel: favMovie,
-                  )); //const Text("data");
-                },
-              ),
+          if (state is FavoritesLoading) {
+
+            return const Center(child: CircularProgressIndicator.adaptive());
+
+          } else if (state is FavoritesError) {
+
+            return MyErrorWidget(
+              errorText: state.message,
+              retryFunction: () {
+                getIt<FavoritesBloc>().add(LoadFavorites());
+              },  
+            );
+
+          } else if (state is FavoritesLoaded) {
+
+            if (state.favorites.isEmpty) {
+              return const Center(
+                child: Text(
+                  "No Favorites has been added yet",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              );
+            }
+
+            return ListView.builder(
+              itemCount: state.favorites.length,
+              itemBuilder: (context, index) {
+                return MoviesWidget(movieModel: state.favorites[index]); //
+              },
+            );
+          }
+          // ignore: curly_braces_in_flow_control_structures
+          return const SizedBox.shrink();
+        },
+      ),
     );
   }
 }

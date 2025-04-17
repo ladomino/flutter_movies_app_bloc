@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:movies_app_provider/constants/my_app_icons.dart';
-import 'package:movies_app_provider/constants/my_theme_data.dart';
-import 'package:movies_app_provider/screens/favorites_screen.dart';
-import 'package:movies_app_provider/service/init_getit.dart';
-import 'package:movies_app_provider/service/navigation_service.dart';
-import 'package:movies_app_provider/view_model/movies_provider.dart';
-import 'package:movies_app_provider/view_model/theme_provider.dart';
-import 'package:movies_app_provider/widgets/movies/movies_widget.dart';
-import 'package:provider/provider.dart';
+import 'package:movies_app_bloc/constants/my_app_icons.dart';
+import 'package:movies_app_bloc/screens/favorites_screen.dart';
+import 'package:movies_app_bloc/service/init_getit.dart';
+import 'package:movies_app_bloc/service/navigation_service.dart';
+import 'package:movies_app_bloc/view_model/movies/movies_bloc.dart';
+import 'package:movies_app_bloc/view_model/theme/theme_bloc.dart';
+import 'package:movies_app_bloc/widgets/movies/movies_widget.dart';
 
 class MoviesScreen extends StatelessWidget {
   const MoviesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // final themeProvider = Provider.of<ThemeProvider>(context);
+  
     return Scaffold(
       appBar: AppBar(
         title: const Text("Popular Movies"),
@@ -29,23 +28,13 @@ class MoviesScreen extends StatelessWidget {
             },
             icon: const Icon(MyAppIcons.favoriteRounded, color: Colors.red),
           ),
-          Consumer(
-            builder: (context, ThemeProvider themeProvider, child) {
-              //log("Theme Button Rebuild");
-
+          BlocBuilder<ThemeBloc, ThemeState>(builder: (context, state) {
               return IconButton(
                 onPressed: () async {
-                  themeProvider.toggleTheme();
-                  // final List<MovieModel> movies = await getIt<ApiService>().fetchMovies();
-                  // log("movies $movies");
-                  // final List<MoviesGenre> genres =
-                  //     await getIt<MoviesRepository>().fetchGenres();
-                  // await getIt<ApiService>().fetchGenres();
-
-                  // log("Genres are $genres");
+                  getIt<ThemeBloc>().add(ToggleThemeEvent());
                 },
                 icon: Icon(
-                  themeProvider.themeData == MyThemeData.darkTheme
+                 state is DarkThemeState
                       ? MyAppIcons.darkMode
                       : MyAppIcons.lightMode,
                 ),
@@ -55,35 +44,51 @@ class MoviesScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer(
-        builder: (context, MoviesProvider moviesProvider, child) {
-          if (moviesProvider.isLoading && moviesProvider.moviesList.isEmpty) {
+      body: BlocBuilder<MoviesBloc, MoviesState>(builder: (context, state) {
+          if (state is MoviesLoadingState) {
             return const Center(child: CircularProgressIndicator.adaptive());
-          } else if (moviesProvider.fetchMoviesError.isNotEmpty) {
-            return Center(child: Text(moviesProvider.fetchMoviesError));
+          } else if (state is MoviesErrorState) {
+            return Center(child: Text(state.message));
+          } else if (state is MoviesLoadedState ||
+              state is MoviesLoadingMoreState) {
+            final movies = state is MoviesLoadedState
+                ? state.movies
+                : (state as MoviesLoadingMoreState).movies;
+            bool isLoadingMore = state is MoviesLoadingMoreState;
+            int itemCount = isLoadingMore ? movies.length + 1 : movies.length;
+
+            return NotificationListener<ScrollNotification>(
+              onNotification: (ScrollNotification scrollInfo) {
+                if (scrollInfo.metrics.pixels ==
+                        scrollInfo.metrics.maxScrollExtent &&
+                    !isLoadingMore) {
+                  getIt<MoviesBloc>().add(FetchMoreMoviesEvent());
+                  return true;
+                }
+                return false;
+              },
+              child: ListView.builder(
+                itemCount: itemCount,
+                itemBuilder: (context, index) {
+                  if (index >= movies.length && isLoadingMore) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+                  return MoviesWidget(
+                    movieModel: movies[index],
+                  );
+                },
+              ),
+            );
           }
 
-          return NotificationListener<ScrollNotification>(
-            onNotification: (ScrollNotification scrollInfo) {
-              if (scrollInfo.metrics.pixels ==
-                      scrollInfo.metrics.maxScrollExtent &&
-                  !moviesProvider.isLoading) {
-                moviesProvider.getMovies();
-                return true;
-              }
-              return false;
-            },
-            child: ListView.builder(
-              itemCount: moviesProvider.moviesList.length,
-              itemBuilder: (context, index) {
-                return MoviesWidget(
-                  movieModel: moviesProvider.moviesList[index],
-                );
-              },
-            ),
-          );
-        },
-      ),
+          return const Center(child: Text('No data available'));
+        }
+      )
     );
   }
 }

@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:movies_app_provider/constants/api_constants.dart';
-import 'package:movies_app_provider/models/movies_genre.dart';
-import 'package:movies_app_provider/models/movies_model.dart';
+import 'package:movies_app_bloc/constants/api_constants.dart';
+import 'package:movies_app_bloc/models/movies_genre.dart';
+import 'package:movies_app_bloc/models/movies_model.dart';
 
 
 class ApiService {

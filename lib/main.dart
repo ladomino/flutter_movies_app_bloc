@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:movies_app_provider/screens/splash_screen.dart';
-import 'package:movies_app_provider/service/init_getit.dart';
-import 'package:movies_app_provider/service/navigation_service.dart';
-import 'package:movies_app_provider/view_model/favorites_provider.dart';
-import 'package:movies_app_provider/view_model/movies_provider.dart';
-import 'package:movies_app_provider/view_model/theme_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:movies_app_bloc/screens/splash_screen.dart';
+import 'package:movies_app_bloc/service/init_getit.dart';
+import 'package:movies_app_bloc/service/navigation_service.dart';
+import 'package:movies_app_bloc/view_model/favorites/favorites_bloc.dart';
+import 'package:movies_app_bloc/view_model/movies/movies_bloc.dart';
+import 'package:movies_app_bloc/view_model/theme/theme_bloc.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,22 +33,26 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return MultiProvider(
+    // Initialize Blocs
+    final themeBloc = getIt<ThemeBloc>()..add(LoadThemeEvent());
+    final moviesBloc = getIt<MoviesBloc>();
+    final favoritesBloc = getIt<FavoritesBloc>();
+
+
+    return MultiBlocProvider(
       providers: [
-        ChangeNotifierProvider<ThemeProvider>(
-          create: (_) => ThemeProvider(), //..loadTheme(),
-        ),
-        ChangeNotifierProvider(create: (_) => MoviesProvider()),
-        ChangeNotifierProvider(create: (_) => FavoritesProvider()),
+        BlocProvider<ThemeBloc>.value(value: themeBloc),
+        BlocProvider<MoviesBloc>.value(value: moviesBloc),
+        BlocProvider<FavoritesBloc>.value(value: favoritesBloc),
       ],
-      child: Consumer(builder: (context, ThemeProvider themeProvider, child) {
-          final themeProvider = Provider.of<ThemeProvider>(context);
+      child: BlocBuilder<ThemeBloc, ThemeState> 
+          (builder: (context, state) {
 
           return MaterialApp(
             navigatorKey: getIt<NavigationService>().navigatorKey,
             debugShowCheckedModeBanner: false,
             title: 'Movies Flutter App',
-            theme: themeProvider.themeData,
+            theme: state is LightThemeState ? ThemeData.light() : ThemeData.dark(),
             home: const SplashScreen(),
           );
         },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:movies_app_provider/constants/my_app_icons.dart';
+import 'package:movies_app_bloc/constants/my_app_icons.dart';
 
 class CachedImageWidget extends StatelessWidget {
   const CachedImageWidget(

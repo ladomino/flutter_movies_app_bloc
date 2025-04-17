@@ -1,6 +1,6 @@
-import 'package:movies_app_provider/models/movies_genre.dart';
-import 'package:movies_app_provider/models/movies_model.dart';
-import 'package:movies_app_provider/service/api_service.dart';
+import 'package:movies_app_bloc/models/movies_genre.dart';
+import 'package:movies_app_bloc/models/movies_model.dart';
+import 'package:movies_app_bloc/service/api_service.dart';
 
 class MoviesRepository {
   final ApiService _apiService;
