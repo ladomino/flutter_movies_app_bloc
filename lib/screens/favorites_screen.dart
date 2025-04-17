@@ -1,68 +1,67 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movies_app_bloc/constants/my_app_icons.dart';
+import 'package:movies_app_bloc/models/movies_model.dart';
 import 'package:movies_app_bloc/service/init_getit.dart';
 import 'package:movies_app_bloc/view_model/favorites/favorites_bloc.dart';
 import 'package:movies_app_bloc/widgets/my_error_widget.dart';
-
-import '../constants/my_app_icons.dart';
-import '../widgets/movies/movies_widget.dart';
+import 'package:movies_app_bloc/widgets/movies/movies_widget.dart';
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Favorite Movies"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              getIt<FavoritesBloc>().add(RemoveAllFromFavorites());
-            },
-            icon: const Icon(MyAppIcons.delete, color: Colors.red),
-          ),
-        ],
-      ),
-      body: BlocBuilder<FavoritesBloc, FavoritesState>(
-        builder: (context, state) {
+    return Scaffold(appBar: _buildAppBar(), body: _buildBody());
+  }
 
-          if (state is FavoritesLoading) {
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: const Text("Favorite Movies"),
+      actions: [
+        IconButton(
+          onPressed: () => getIt<FavoritesBloc>().add(RemoveAllFromFavorites()),
+          icon: const Icon(MyAppIcons.delete, color: Colors.red),
+        ),
+      ],
+    );
+  }
 
-            return const Center(child: CircularProgressIndicator.adaptive());
+  Widget _buildBody() {
+    return BlocBuilder<FavoritesBloc, FavoritesState>(
+      builder: (context, state) {
+        return state.when(
+          loading:
+              () => const Center(child: CircularProgressIndicator.adaptive()),
+          error:
+              (message) => MyErrorWidget(
+                errorText: message,
+                retryFunction:
+                    () => getIt<FavoritesBloc>().add(LoadFavorites()),
+              ),
+          loaded: (favorites) => _buildFavoritesList(favorites),
+          initial: () => const SizedBox.shrink(),
+        );
+      },
+    );
+  }
 
-          } else if (state is FavoritesError) {
+  Widget _buildFavoritesList(List<MovieModel> favorites) {
+    if (favorites.isEmpty) {
+      return const Center(
+        child: Text(
+          "No Favorites have been added yet",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
 
-            return MyErrorWidget(
-              errorText: state.message,
-              retryFunction: () {
-                getIt<FavoritesBloc>().add(LoadFavorites());
-              },  
-            );
-
-          } else if (state is FavoritesLoaded) {
-
-            if (state.favorites.isEmpty) {
-              return const Center(
-                child: Text(
-                  "No Favorites has been added yet",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              );
-            }
-
-            return ListView.builder(
-              itemCount: state.favorites.length,
-              itemBuilder: (context, index) {
-                return MoviesWidget(movieModel: state.favorites[index]); //
-              },
-            );
-          }
-          // ignore: curly_braces_in_flow_control_structures
-          return const SizedBox.shrink();
-        },
-      ),
+    return ListView.builder(
+      itemCount: favorites.length,
+      itemBuilder:
+          (context, index) => MoviesWidget(movieModel: favorites[index]),
     );
   }
 }

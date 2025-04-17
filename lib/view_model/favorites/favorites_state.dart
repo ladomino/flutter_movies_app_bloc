@@ -2,9 +2,23 @@ part of 'favorites_bloc.dart';
 
 sealed class FavoritesState extends Equatable {
   const FavoritesState();
-  
+
   @override
   List<Object> get props => [];
+
+  T when<T>({
+    required T Function() initial,
+    required T Function() loading,
+    required T Function(String message) error,
+    required T Function(List<MovieModel> favorites) loaded,
+  }) {
+    return switch (this) {
+      FavoritesInitial() => initial(),
+      FavoritesLoading() => loading(),
+      FavoritesError(message: var message) => error(message),
+      FavoritesLoaded(favorites: var favorites) => loaded(favorites),
+    };
+  }
 }
 
 final class FavoritesInitial extends FavoritesState {}

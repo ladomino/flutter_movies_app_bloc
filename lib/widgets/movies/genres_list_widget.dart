@@ -15,12 +15,15 @@ class GenresListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<MoviesBloc, MoviesState>(
       builder: (context, state) {
+
         if (state is MoviesLoadedState || state is MoviesLoadingMoreState) {
+
           List<MoviesGenre> moviesGenre = GenreUtils.movieGenresNames(
               movieModel.genreIds,
               state is MoviesLoadedState
                   ? state.genres
                   : (state as MoviesLoadingMoreState).genres);
+
           return Wrap(
             children: List.generate(
               moviesGenre.length,
@@ -36,6 +39,7 @@ class GenresListWidget extends StatelessWidget {
 
   Widget chipWidget(
       {required String genreName, required BuildContext context}) {
+        
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: Container(

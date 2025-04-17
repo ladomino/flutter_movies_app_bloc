@@ -2,6 +2,24 @@ part of 'movies_bloc.dart';
 
 sealed class MoviesState extends Equatable {
   const MoviesState();
+
+  T when<T>({
+    required T Function() initial,
+    required T Function() loading,
+    required T Function(String message) error,
+    required T Function(List<MovieModel> movies, List<MoviesGenre> genres, int currentPage) loaded,
+    required T Function(List<MovieModel> movies, List<MoviesGenre> genres, int currentPage) loadingMore,
+  }) {
+    return switch (this) {
+      MoviesInitial() => initial(),
+      MoviesLoadingState() => loading(),
+        MoviesErrorState(message: var message) => error(message),
+      MoviesLoadedState(movies: var movies, genres: var genres, currentPage: var currentPage) => 
+        loaded(movies, genres, currentPage),
+      MoviesLoadingMoreState(movies: var movies, genres: var genres, currentPage: var currentPage) => 
+        loadingMore(movies, genres, currentPage),
+    };
+  }
   
   @override
   List<Object> get props => [];
