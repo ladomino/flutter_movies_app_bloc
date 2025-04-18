@@ -20,3 +20,14 @@ void setupLocator() {
   getIt.registerLazySingleton<MoviesBloc>(() => MoviesBloc());
   getIt.registerLazySingleton<FavoritesBloc>(() => FavoritesBloc());
 }
+
+Future<void> closeLocator() async {
+  // Dispose of resources that need explicit cleanup
+  await getIt<FavoritesBloc>().close();
+  await getIt<MoviesBloc>().close();
+  await getIt<ThemeBloc>().close();
+  await getIt<FavoritesBloc>().close();
+
+  // Reset the entire GetIt instance
+  await getIt.reset();
+}
